@@ -106,25 +106,12 @@
     <Compile Include="ReverseProxy.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="WebForm1.aspx.cs">
-      <DependentUpon>WebForm1.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="WebForm1.aspx.designer.cs">
-      <DependentUpon>WebForm1.aspx</DependentUpon>
-    </Compile>
     <Content Include="Global.asax">
       <SubType>Component</SubType>
     </Content>
     <Content Include="Web.config" />
-    <Content Include="WebForm1.aspx">
-      <SubType>Form</SubType>
-    </Content>
     <EmbeddedResource Include="Global.asax.resx">
       <DependentUpon>Global.asax.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WebForm1.aspx.resx">
-      <DependentUpon>WebForm1.aspx.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
