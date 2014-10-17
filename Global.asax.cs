@@ -23,7 +23,7 @@ namespace ReverseProxy
 		
 		protected void Application_Start(Object sender, EventArgs e)
 		{
-
+            Manager.Instance.GetHashCode();
 		}
  
 		protected void Session_Start(Object sender, EventArgs e)

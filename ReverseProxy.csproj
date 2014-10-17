@@ -103,6 +103,7 @@
       <DependentUpon>Global.asax</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Manager.cs" />
     <Compile Include="ReverseProxy.cs">
       <SubType>Code</SubType>
     </Compile>
