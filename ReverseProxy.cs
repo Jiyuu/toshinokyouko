@@ -21,8 +21,8 @@ namespace ReverseProxy
 		public void ProcessRequest(HttpContext context)
 		{
 			//read values from configuration file
-			int proxyMode = Convert.ToInt32(ConfigurationSettings.AppSettings["ProxyMode"]); 
-			string remoteWebSite = ConfigurationSettings.AppSettings["RemoteWebSite"];  
+            int proxyMode = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["ProxyMode"]);
+            string remoteWebSite = System.Configuration.ConfigurationManager.AppSettings["RemoteWebSite"];  
 			
 			string remoteUrl;
 			if (proxyMode==0)
@@ -59,7 +59,7 @@ namespace ReverseProxy
 			{
 				response = (HttpWebResponse)request.GetResponse ();
 			}
-			catch(System.Net.WebException we)
+			catch
 			{
 				//remote url not found, send 404 to client 
 				context.Response.StatusCode = 404;
