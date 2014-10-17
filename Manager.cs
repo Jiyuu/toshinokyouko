@@ -6,16 +6,7 @@ public sealed class Manager
     private static volatile Manager instance;
     private static object syncRoot = new Object();
     System.Timers.Timer timer = new System.Timers.Timer(TimeSpan.FromDays(1).TotalMilliseconds);
-    private Manager() {
-        timer.Elapsed += timer_Elapsed;
-    }
-
-    #endregion
-
-    void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-    {
-        updateImagesList();
-    }
+   
 
     public static Manager Instance
     {
@@ -33,6 +24,18 @@ public sealed class Manager
             return instance;
         }
     }
+    #endregion
+
+    private Manager()
+    {
+        timer.Elapsed += timer_Elapsed;
+    }
+
+    void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+    {
+        updateImagesList();
+    }
+
 
     private void updateImagesList()
     { 
