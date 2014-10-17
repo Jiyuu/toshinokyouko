@@ -1,0 +1,17 @@
+C:\Users\Jiyuu\Downloads\ReverseProxy_src\bin\ReverseProxy.dll
+C:\Users\Jiyuu\Downloads\ReverseProxy_src\bin\ReverseProxy.pdb
+C:\Users\Jiyuu\Downloads\ReverseProxy_src\obj\Debug\ReverseProxy.csprojResolveAssemblyReference.cache
+C:\Users\Jiyuu\Downloads\ReverseProxy_src\obj\Debug\ReverseProxy.Global.resources
+C:\Users\Jiyuu\Downloads\ReverseProxy_src\obj\Debug\ReverseProxy.WebForm1.resources
+C:\Users\Jiyuu\Downloads\ReverseProxy_src\obj\Debug\ReverseProxy.csproj.GenerateResource.Cache
+C:\Users\Jiyuu\Downloads\ReverseProxy_src\obj\Debug\ReverseProxy.dll
+C:\Users\Jiyuu\Downloads\ReverseProxy_src\obj\Debug\ReverseProxy.pdb
+C:\Dev\git\OldPC\ReverseProxy_src\bin\ReverseProxy.dll.config
+C:\Dev\git\OldPC\ReverseProxy_src\bin\ReverseProxy.dll
+C:\Dev\git\OldPC\ReverseProxy_src\bin\ReverseProxy.pdb
+C:\Dev\git\OldPC\ReverseProxy_src\obj\Debug\ReverseProxy.csprojResolveAssemblyReference.cache
+C:\Dev\git\OldPC\ReverseProxy_src\obj\Debug\ReverseProxy.Global.resources
+C:\Dev\git\OldPC\ReverseProxy_src\obj\Debug\ReverseProxy.WebForm1.resources
+C:\Dev\git\OldPC\ReverseProxy_src\obj\Debug\ReverseProxy.csproj.GenerateResource.Cache
+C:\Dev\git\OldPC\ReverseProxy_src\obj\Debug\ReverseProxy.dll
+C:\Dev\git\OldPC\ReverseProxy_src\obj\Debug\ReverseProxy.pdb
