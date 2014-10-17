@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ReverseProxy.Data;
+using System;
+using System.Linq;
 
 public sealed class Manager
 {
@@ -26,6 +28,19 @@ public sealed class Manager
     }
     #endregion
 
+    public void Init()
+    {
+        using (var db = new EFContext())
+        {
+            if (db.Posts.Any())
+                return;
+            else
+            { 
+            
+            }
+        }
+    }
+
     private Manager()
     {
         timer.Elapsed += timer_Elapsed;
@@ -39,7 +54,29 @@ public sealed class Manager
 
     private void updateImagesList()
     { 
-    
+        int i = 0;
+        while (saveDandooruList(i))
+        { }
+    }
+
+    private bool saveDandooruList(int i)
+    {
+        try
+        {
+
+        }
+        catch {
+            return false;
+        }
+
+
+
+        using (var db = new EFContext())
+        {
+
+
+            return true;
+        }
     }
 
     public string GetImage()

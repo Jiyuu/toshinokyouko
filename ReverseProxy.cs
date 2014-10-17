@@ -163,6 +163,8 @@ namespace ReverseProxy
             return text.Replace(domain, context.Request.Url.Host);
 
         }
+
+
         static string[] imgs = new string[] { "http://animeholic.net/i/a/src/1350064805931.jpg", "http://animeholic.net/i/a/src/1350064668683.jpg", "http://animeholic.net/i/a/src/1349616956965.png", "http://animeholic.net/i/a/src/1349617287333.jpg", "http://animeholic.net/i/a/src/1349617087675.jpg", "http://animeholic.net/i/a/src/1349616876581.jpg", "http://animeholic.net/i/a/src/1349617018911.jpg", "http://animeholic.net/i/a/src/1349735207114.jpg", "http://animeholic.net/i/a/src/1347894857755.jpg" };
 
         public string getImg()
