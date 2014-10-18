@@ -184,7 +184,7 @@ namespace ReverseProxy
                     record.URL = "/TKimages/" + filename;
                     record.IsSaved = true;
                     if (ext != ".gif")
-                        NormalizeSize(0, 350, System.Web.HttpRuntime.AppDomainAppPath + "/TKimages/" + filename);
+                        NormalizeSize(300, 350, System.Web.HttpRuntime.AppDomainAppPath + "/TKimages/" + filename);
 
                     db.SaveChanges();
                     return record.URL;
