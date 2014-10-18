@@ -149,6 +149,15 @@ namespace ReverseProxy
             }
         }
 
+        public void DisablePicture(string url)
+        {
+            using (var db = new EFContext())
+            {
+                var post = db.Posts.FirstOrDefault(p => p.URL == url);
+                post.Enabled = false;
+                db.SaveChanges();
+            }
+        }
         private string addImageToList()
         {
             using (var db = new EFContext())
@@ -175,7 +184,7 @@ namespace ReverseProxy
                     record.URL = "/TKimages/" + filename;
                     record.IsSaved = true;
                     if (ext != ".gif")
-                        NormalizeSize(350, 0, System.Web.HttpRuntime.AppDomainAppPath + "/TKimages/" + filename);
+                        NormalizeSize(0, 350, System.Web.HttpRuntime.AppDomainAppPath + "/TKimages/" + filename);
 
                     db.SaveChanges();
                     return record.URL;

@@ -35,8 +35,17 @@ namespace ReverseProxy
             else
                 remoteUrl = context.Request.Url.AbsoluteUri.Replace(context.Request.Url.Host + (context.Request.Url.Port != 80 ? ":" + context.Request.Url.Port : ""), remoteWebSite).Replace("/ToshinoKyouko-search.php", "/tokyotosho-search.php"); //only one site accepted
 
-            if (!context.Request.Url.PathAndQuery.Contains("TKimages"))
+            if (!context.Request.Url.PathAndQuery.StartsWith("/TKimages"))
             {
+                if (context.Request.Url.PathAndQuery.StartsWith("/iyarashii/"))
+                { 
+                    if(!string.IsNullOrWhiteSpace(context.Request.QueryString["i"]))
+                    {
+                        string url = HttpUtility.UrlDecode(context.Request.QueryString["i"]);
+                        Manager.Instance.DisablePicture(url);
+                    }
+                }
+
                 //create the web request to get the remote stream
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(remoteUrl);
                 if (context.Request.HttpMethod == "POST")
@@ -153,7 +162,8 @@ namespace ReverseProxy
         }
         public string replaceOtherDomain(string html)
         {
-            html = html.Replace("<div id=\"main\">", "<div id=\"main\" style=\"background-image:url('" + getImg() + "');background-repeat:no-repeat;background-size: auto 350px; \">");
+            string img = getImg();
+            html = html.Replace("<div id=\"main\">", "<div id=\"main\" style=\"background-image:url('" + img + "');background-repeat:no-repeat;background-size: auto 350px; \"><a href=\"javascript:var myRequest = new XMLHttpRequest();myRequest.open('GET','/iyarashii/?i=" + HttpUtility.UrlEncode(img) + "',true);myRequest.send();void(0)\" style=\"position:absolute;top:400px;left:40px;\" >iyarashii?</a>");
             html = html.Replace("Tokyo Toshokan", "Toshino Kyouko");
             html = html.Replace("<h1>Tokyo <span title=\"Japanese: Libary\">Toshokan</span></h1>", "<h1>Toshino Kyouko</h1>");
             html = html.Replace("<div class=\"centertext\">東京 図書館</div>", "<div class=\"centertext\">歳納 京子</div>");
