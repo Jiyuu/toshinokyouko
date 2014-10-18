@@ -3,6 +3,8 @@ using System;
 using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -94,10 +96,10 @@ namespace ReverseProxy
                         foreach (var rec in res)
                         {
                             int id = (int)rec["id"];
-                            if (!db.Posts.Any(p => p.PostID == id) && rec["tag_string"].ToString().Split(' ').Any(s=>s=="comic"))
+                            if (!db.Posts.Any(p => p.PostID == id) && !rec["tag_string"].ToString().Split(' ').Any(s => s == "comic") && allowedExtentions.Contains(Path.GetExtension(rec["file_url"].ToString())))
                             {
 
-                                db.Posts.Add(new Post() { IsSaved = false, PostID = (int)rec["id"], URL = rec["file_url"].ToString(),Enabled=true });
+                                db.Posts.Add(new Post() { IsSaved = false, PostID = (int)rec["id"], URL = rec["file_url"].ToString(), Enabled = true });
                                 db.SaveChanges();
                             }
                         }
@@ -112,34 +114,84 @@ namespace ReverseProxy
                 return false;
             }
         }
-
+        static string[] allowedExtentions = new string[] { ".gif", ".jpg", ".jpeg", ".png" };
         public string GetImage()
         {
             using (var db = new EFContext())
             {
-                db.Database.Log = s => logger.Trace(s);
-                var record = db.Posts.Where(p=>p.Enabled).OrderBy(p => Guid.NewGuid()).First();
-                if (record.IsSaved)
+                while (true)
                 {
-                    return record.URL;
-                }
-                else
-                {
-                    using (System.Net.WebClient wc = new System.Net.WebClient())
-                    { 
-                        string fullurl="http://danbooru.donmai.us"+record.URL;
-                        string filename=Path.GetFileName(new Uri(fullurl).AbsolutePath);
-                        wc.DownloadFile(fullurl, System.Web.HttpRuntime.AppDomainAppPath +"/TKimages/"+ filename);
-
-                        record.URL = "/TKimages/" +filename;
-                        record.IsSaved = true;
-                        db.SaveChanges();
+                    db.Database.Log = s => logger.Trace(s);
+                    var record = db.Posts.Where(p => p.Enabled).OrderBy(p => Guid.NewGuid()).First();
+                    if (record.IsSaved)
+                    {
                         return record.URL;
                     }
+                    else
+                    {
+                        using (System.Net.WebClient wc = new System.Net.WebClient())
+                        {
+                            string fullurl = "http://danbooru.donmai.us" + record.URL;
+                            string filename = Path.GetFileName(new Uri(fullurl).AbsolutePath);
+                            string ext = Path.GetExtension(new Uri(fullurl).AbsolutePath);
 
+
+
+                            wc.DownloadFile(fullurl, System.Web.HttpRuntime.AppDomainAppPath + "/TKimages/" + filename);
+
+                            record.URL = "/TKimages/" + filename;
+                            record.IsSaved = true;
+                            db.SaveChanges();
+                            if (ext != ".gif")
+                                NormalizeSize(350, 0, System.Web.HttpRuntime.AppDomainAppPath + "/TKimages/" + filename);
+                            return record.URL;
+                        }
+
+                    }
                 }
             }
         }
+
+        public void NormalizeSize(int maxWidth, int maxHeight, string path)
+        {
+
+            var image = System.Drawing.Image.FromFile(path);
+            if ((maxWidth != 0 && image.Width > maxWidth) || (maxHeight != 0 && image.Height > maxHeight))
+            {
+                var ratio = (double)image.Width / (double)image.Height;
+                int newWidth;
+                int newHeight;
+                if (maxHeight != 0)
+                {
+                    newHeight = (int)(Math.Min(image.Height, maxHeight));
+                    newWidth = (int)(newHeight * ratio);
+                }
+                else
+                {
+                    newHeight = image.Height;
+                    newWidth = image.Width;
+                }
+                if (maxWidth != 0 && newWidth > maxWidth)
+                {
+                    newWidth = maxWidth;
+                    newHeight = (int)((1 / ratio) * newWidth);
+                }
+
+                var newImage = new Bitmap(newWidth, newHeight);
+                Graphics thumbGraph = Graphics.FromImage(newImage);
+
+                thumbGraph.CompositingQuality = CompositingQuality.HighQuality;
+                thumbGraph.SmoothingMode = SmoothingMode.HighQuality;
+                //thumbGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
+
+                thumbGraph.DrawImage(image, 0, 0, newWidth, newHeight);
+                image.Dispose();
+
+                newImage.Save(path, newImage.RawFormat);
+            }
+        }
+
+
 
     }
 }
