@@ -11,7 +11,8 @@ namespace ReverseProxy
 	/// </summary>
 	public class Global : System.Web.HttpApplication
 	{
-		/// <summary>
+        NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        /// <summary>
 		/// Variable nécessaire au concepteur.
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
@@ -23,7 +24,8 @@ namespace ReverseProxy
 		
 		protected void Application_Start(Object sender, EventArgs e)
 		{
-            Manager.Instance.GetHashCode();
+            logger.Trace("Application_Start");
+            Manager.Instance.Init();
 		}
  
 		protected void Session_Start(Object sender, EventArgs e)
@@ -33,6 +35,7 @@ namespace ReverseProxy
 
 		protected void Application_BeginRequest(Object sender, EventArgs e)
 		{
+            logger.Trace("Application_BeginRequest");
 
 		}
 

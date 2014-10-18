@@ -13,6 +13,7 @@ namespace ReverseProxy
     /// </summary>
     public class ReverseProxy : IHttpHandler
     {
+        NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         /// <summary>
         /// Method calls when client request the server
@@ -20,6 +21,10 @@ namespace ReverseProxy
         /// <param name="context">HTTP context for client</param>
         public void ProcessRequest(HttpContext context)
         {
+
+            Manager.Instance.Init();
+
+            logger.Trace(context.Request.Url);
             //read values from configuration file
             int proxyMode = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["ProxyMode"]);
             string remoteWebSite = System.Configuration.ConfigurationManager.AppSettings["RemoteWebSite"];

@@ -1,87 +1,115 @@
 ﻿using ReverseProxy.Data;
 using System;
 using System.Linq;
+using System.Threading;
 
-public sealed class Manager
+namespace ReverseProxy
 {
-    #region singleton
-    private static volatile Manager instance;
-    private static object syncRoot = new Object();
-    System.Timers.Timer timer = new System.Timers.Timer(TimeSpan.FromDays(1).TotalMilliseconds);
-   
-
-    public static Manager Instance
+    public sealed class Manager
     {
-        get
+        #region singleton
+        private static volatile Manager instance;
+        private static object syncRoot = new Object();
+        System.Timers.Timer timer = new System.Timers.Timer(TimeSpan.FromDays(1).TotalMilliseconds);
+
+
+        public static Manager Instance
         {
-            if (instance == null)
+            get
             {
-                lock (syncRoot)
+                if (instance == null)
                 {
-                    if (instance == null)
-                        instance = new Manager();
+                    lock (syncRoot)
+                    {
+                        if (instance == null)
+                            instance = new Manager();
+                    }
+                }
+
+                return instance;
+            }
+        }
+        #endregion
+
+        NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        public void Init()
+        {
+            logger.Trace("Init");
+            using (var db = new EFContext())
+            {
+                if (db.Posts.Any())
+                    return;
+                else
+                {
+                    for (int i = 0; i < 5; i++)
+                    {
+
+                        if (saveDandooruList(0))
+                            return;
+
+                        Thread.Sleep(1000);
+                    }
+                    throw new Exception("Couldnt get any data to start working");
                 }
             }
-
-            return instance;
         }
-    }
-    #endregion
 
-    public void Init()
-    {
-        using (var db = new EFContext())
+        private Manager()
         {
-            if (db.Posts.Any())
-                return;
-            else
-            { 
-            
+            timer.Elapsed += timer_Elapsed;
+        }
+
+        void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            updateImagesList();
+        }
+
+
+        private void updateImagesList()
+        {
+            logger.Trace("updateImagesList");
+            int i = 0;
+            while (saveDandooruList(i))
+            { i++; }
+        }
+
+        private bool saveDandooruList(int page)
+        {
+            logger.Trace("saveDandooruList({0})", page);
+            try
+            {
+                if (!DanbooruManager.MarkRequest())
+                    return false;
+
+                using (var wc = new System.Net.WebClient())
+                {
+                    var res = Newtonsoft.Json.Linq.JObject.Parse(wc.DownloadString(string.Format(System.Web.HttpUtility.UrlDecode(System.Configuration.ConfigurationManager.AppSettings["DanbooruPostsURL"]), System.Configuration.ConfigurationManager.AppSettings["DabooruTags"], page)));
+                    using (var db = new EFContext())
+                    {
+                        foreach (var result in res)
+                        {
+                            if (!db.Posts.Any(p => p.PostID == (int)res["id"]))
+                            {
+                                db.Posts.Add(new Post() { IsSaved = false, PostID = (int)res["id"], URL = res["file_url"].ToString() });
+                                db.SaveChanges();
+                            }
+                        }
+
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Trace(ex.ToString());
+                return false;
             }
         }
-    }
 
-    private Manager()
-    {
-        timer.Elapsed += timer_Elapsed;
-    }
-
-    void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-    {
-        updateImagesList();
-    }
-
-
-    private void updateImagesList()
-    { 
-        int i = 0;
-        while (saveDandooruList(i))
-        { }
-    }
-
-    private bool saveDandooruList(int i)
-    {
-        try
+        public string GetImage()
         {
-
-        }
-        catch {
-            return false;
+            return null;
         }
 
-
-
-        using (var db = new EFContext())
-        {
-
-
-            return true;
-        }
     }
-
-    public string GetImage()
-    {
-        return null;
-    }
-
 }
