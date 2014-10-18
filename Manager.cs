@@ -8,6 +8,7 @@ using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ReverseProxy
 {
@@ -122,13 +123,11 @@ namespace ReverseProxy
                 while (true)
                 {
                     db.Database.Log = s => logger.Trace(s);
-                    var record = db.Posts.Where(p => p.Enabled).OrderBy(p => Guid.NewGuid()).First();
-                    if (record.IsSaved)
+                    var record = db.Posts.Where(p => p.Enabled && !p.IsSaved).OrderBy(p => Guid.NewGuid()).First();
+
+                    Task.Factory.StartNew(() =>
                     {
-                        return record.URL;
-                    }
-                    else
-                    {
+
                         using (System.Net.WebClient wc = new System.Net.WebClient())
                         {
                             string fullurl = "http://danbooru.donmai.us" + record.URL;
@@ -141,13 +140,17 @@ namespace ReverseProxy
 
                             record.URL = "/TKimages/" + filename;
                             record.IsSaved = true;
-                            db.SaveChanges();
                             if (ext != ".gif")
                                 NormalizeSize(350, 0, System.Web.HttpRuntime.AppDomainAppPath + "/TKimages/" + filename);
-                            return record.URL;
+
+                            db.SaveChanges();
+
                         }
 
-                    }
+                    });
+                    record = db.Posts.Where(p => p.Enabled && p.IsSaved).OrderBy(p => Guid.NewGuid()).First();
+
+                    return record.URL;
                 }
             }
         }
