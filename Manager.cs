@@ -118,43 +118,70 @@ namespace ReverseProxy
         static string[] allowedExtentions = new string[] { ".gif", ".jpg", ".jpeg", ".png" };
         public string GetImage()
         {
+            logger.Info("Getting Image");
             using (var db = new EFContext())
             {
-                while (true)
-                {
-                    db.Database.Log = s => logger.Trace(s);
-                    var record = db.Posts.Where(p => p.Enabled && !p.IsSaved).OrderBy(p => Guid.NewGuid()).First();
-
-                    Task.Factory.StartNew(() =>
+                    var record = db.Posts.Where(p => p.Enabled && p.IsSaved).OrderBy(p => Guid.NewGuid()).FirstOrDefault();
+                    if (record != null)
                     {
-
-                        using (System.Net.WebClient wc = new System.Net.WebClient())
+                        Task.Factory.StartNew(() =>
                         {
-                            string fullurl = "http://danbooru.donmai.us" + record.URL;
-                            string filename = Path.GetFileName(new Uri(fullurl).AbsolutePath);
-                            string ext = Path.GetExtension(new Uri(fullurl).AbsolutePath);
-
-
-
-                            wc.DownloadFile(fullurl, System.Web.HttpRuntime.AppDomainAppPath + "/TKimages/" + filename);
-
-                            record.URL = "/TKimages/" + filename;
-                            record.IsSaved = true;
-                            if (ext != ".gif")
-                                NormalizeSize(350, 0, System.Web.HttpRuntime.AppDomainAppPath + "/TKimages/" + filename);
-
-                            db.SaveChanges();
-
+                            try
+                            {
+                                logger.Info("downloading new picture");
+                                addImageToList();
+                            }
+                            catch { }
+                        });
+                        logger.Info("Returning Image");
+                        return record.URL;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            return addImageToList();
                         }
+                        finally {
+                            logger.Info("Returning Image after download");
+                        }
+                    }
+            }
+        }
 
-                    });
-                    record = db.Posts.Where(p => p.Enabled && p.IsSaved).OrderBy(p => Guid.NewGuid()).First();
+        private string addImageToList()
+        {
+            using (var db = new EFContext())
+            {
+                var record = db.Posts.Where(p => p.Enabled && !p.IsSaved).OrderBy(p => Guid.NewGuid()).FirstOrDefault();
+                if (record == null)
+                {
+                    record = db.Posts.Where(p => p.Enabled && p.IsSaved).OrderBy(p => Guid.NewGuid()).FirstOrDefault();
+                    if (record == null)
+                        throw new Exception("Cannot get any posts");
+                    return record.URL;
+                }
 
+                using (System.Net.WebClient wc = new System.Net.WebClient())
+                {
+                    string fullurl = "http://danbooru.donmai.us" + record.URL;
+                    string filename = Path.GetFileName(new Uri(fullurl).AbsolutePath);
+                    string ext = Path.GetExtension(new Uri(fullurl).AbsolutePath);
+
+
+
+                    wc.DownloadFile(fullurl, System.Web.HttpRuntime.AppDomainAppPath + "/TKimages/" + filename);
+
+                    record.URL = "/TKimages/" + filename;
+                    record.IsSaved = true;
+                    if (ext != ".gif")
+                        NormalizeSize(350, 0, System.Web.HttpRuntime.AppDomainAppPath + "/TKimages/" + filename);
+
+                    db.SaveChanges();
                     return record.URL;
                 }
             }
         }
-
         public void NormalizeSize(int maxWidth, int maxHeight, string path)
         {
 
