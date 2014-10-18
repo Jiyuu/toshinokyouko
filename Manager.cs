@@ -1,5 +1,9 @@
 ﻿using ReverseProxy.Data;
 using System;
+using System.Data.Entity.Core;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Infrastructure;
+using System.IO;
 using System.Linq;
 using System.Threading;
 
@@ -45,8 +49,10 @@ namespace ReverseProxy
                     {
 
                         if (saveDandooruList(0))
+                        {
+                            System.Threading.Tasks.Task.Factory.StartNew(() => { try { updateImagesList(1); } catch { } });
                             return;
-
+                        }
                         Thread.Sleep(1000);
                     }
                     throw new Exception("Couldnt get any data to start working");
@@ -65,10 +71,9 @@ namespace ReverseProxy
         }
 
 
-        private void updateImagesList()
+        private void updateImagesList(int i = 0)
         {
             logger.Trace("updateImagesList");
-            int i = 0;
             while (saveDandooruList(i))
             { i++; }
         }
@@ -83,14 +88,16 @@ namespace ReverseProxy
 
                 using (var wc = new System.Net.WebClient())
                 {
-                    var res = Newtonsoft.Json.Linq.JObject.Parse(wc.DownloadString(string.Format(System.Web.HttpUtility.UrlDecode(System.Configuration.ConfigurationManager.AppSettings["DanbooruPostsURL"]), System.Configuration.ConfigurationManager.AppSettings["DabooruTags"], page)));
+                    var res = Newtonsoft.Json.Linq.JContainer.Parse(wc.DownloadString(string.Format(System.Web.HttpUtility.UrlDecode(System.Configuration.ConfigurationManager.AppSettings["DanbooruPostsURL"]), System.Configuration.ConfigurationManager.AppSettings["DabooruTags"], page)));
                     using (var db = new EFContext())
                     {
-                        foreach (var result in res)
+                        foreach (var rec in res)
                         {
-                            if (!db.Posts.Any(p => p.PostID == (int)res["id"]))
+                            int id = (int)rec["id"];
+                            if (!db.Posts.Any(p => p.PostID == id) && rec["tag_string"].ToString().Split(' ').Any(s=>s=="comic"))
                             {
-                                db.Posts.Add(new Post() { IsSaved = false, PostID = (int)res["id"], URL = res["file_url"].ToString() });
+
+                                db.Posts.Add(new Post() { IsSaved = false, PostID = (int)rec["id"], URL = rec["file_url"].ToString(),Enabled=true });
                                 db.SaveChanges();
                             }
                         }
@@ -108,7 +115,30 @@ namespace ReverseProxy
 
         public string GetImage()
         {
-            return null;
+            using (var db = new EFContext())
+            {
+                db.Database.Log = s => logger.Trace(s);
+                var record = db.Posts.Where(p=>p.Enabled).OrderBy(p => Guid.NewGuid()).First();
+                if (record.IsSaved)
+                {
+                    return record.URL;
+                }
+                else
+                {
+                    using (System.Net.WebClient wc = new System.Net.WebClient())
+                    { 
+                        string fullurl="http://danbooru.donmai.us"+record.URL;
+                        string filename=Path.GetFileName(new Uri(fullurl).AbsolutePath);
+                        wc.DownloadFile(fullurl, System.Web.HttpRuntime.AppDomainAppPath +"/TKimages/"+ filename);
+
+                        record.URL = "/TKimages/" +filename;
+                        record.IsSaved = true;
+                        db.SaveChanges();
+                        return record.URL;
+                    }
+
+                }
+            }
         }
 
     }

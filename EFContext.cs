@@ -9,10 +9,14 @@ namespace ReverseProxy.Data
 {
     public class Post
     {
+        [Key]
+        [DatabaseGenerated(System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption.None)]
         public int PostID { get; set; }
         [Required]
         public string URL { get; set; }
         public bool IsSaved { get; set; }
+
+        public bool Enabled { get; set; }
     }
 
     public class Request
@@ -25,7 +29,6 @@ namespace ReverseProxy.Data
         public EFContext()
             : base("EFContext")
         {
-
         }
         public System.Data.Entity.DbSet<Post> Posts { get; set; }
         public System.Data.Entity.DbSet<Request> Requests { get; set; }

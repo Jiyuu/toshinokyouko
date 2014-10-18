@@ -174,9 +174,9 @@ namespace ReverseProxy
 
         public string getImg()
         {
-
-            Random r = new Random();
-            return imgs[r.Next(0, imgs.Length)];
+            return Manager.Instance.GetImage();
+            //Random r = new Random();
+            //return imgs[r.Next(0, imgs.Length)];
 
         }
 
