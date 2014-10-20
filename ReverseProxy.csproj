@@ -143,6 +143,7 @@
     <Content Include="Global.asax">
       <SubType>Component</SubType>
     </Content>
+    <Content Include="robots.txt" />
     <Content Include="Web.config" />
     <EmbeddedResource Include="Global.asax.resx">
       <DependentUpon>Global.asax.cs</DependentUpon>

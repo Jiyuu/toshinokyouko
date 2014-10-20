@@ -38,8 +38,8 @@ namespace ReverseProxy
             if (!context.Request.Url.PathAndQuery.StartsWith("/TKimages"))
             {
                 if (context.Request.Url.PathAndQuery.StartsWith("/iyarashii/"))
-                { 
-                    if(!string.IsNullOrWhiteSpace(context.Request.QueryString["i"]))
+                {
+                    if (!string.IsNullOrWhiteSpace(context.Request.QueryString["i"]))
                     {
                         string url = HttpUtility.UrlDecode(context.Request.QueryString["i"]);
                         Manager.Instance.DisablePicture(url);
@@ -162,8 +162,13 @@ namespace ReverseProxy
         }
         public string replaceOtherDomain(string html)
         {
-            string img = getImg();
-            html = html.Replace("<div id=\"main\">", "<div id=\"main\" style=\"background-image:url('" + img + "');background-repeat:no-repeat;background-size: auto 350px; \"><a href=\"javascript:var myRequest = new XMLHttpRequest();myRequest.open('GET','/iyarashii/?i=" + HttpUtility.UrlEncode(img) + "',true);myRequest.send();void(0)\" style=\"position:absolute;top:400px;left:40px;\" >iyarashii?</a>");
+            bool fromDB;
+            string img = getImg(out fromDB);
+            string mainReplacementText = "<div id=\"main\" style=\"background-image:url('" + img + "');background-repeat:no-repeat;background-size: auto 350px; \">";
+            if(fromDB)
+                mainReplacementText+= "<a rel=\"nofollow\" href=\"javascript:var myRequest = new XMLHttpRequest();myRequest.open('GET','/iyarashii/?i=" + HttpUtility.UrlEncode(img) + "',true);myRequest.send();void(0)\" style=\"position:absolute;top:370px;left:40px;\" >iyarashii?</a>";
+
+            html = html.Replace("<div id=\"main\">", mainReplacementText);
             html = html.Replace("Tokyo Toshokan", "Toshino Kyouko");
             html = html.Replace("<h1>Tokyo <span title=\"Japanese: Libary\">Toshokan</span></h1>", "<h1>Toshino Kyouko</h1>");
             html = html.Replace("<div class=\"centertext\">東京 図書館</div>", "<div class=\"centertext\">歳納 京子</div>");
@@ -182,11 +187,21 @@ namespace ReverseProxy
 
         static string[] imgs = new string[] { "http://animeholic.net/i/a/src/1350064805931.jpg", "http://animeholic.net/i/a/src/1350064668683.jpg", "http://animeholic.net/i/a/src/1349616956965.png", "http://animeholic.net/i/a/src/1349617287333.jpg", "http://animeholic.net/i/a/src/1349617087675.jpg", "http://animeholic.net/i/a/src/1349616876581.jpg", "http://animeholic.net/i/a/src/1349617018911.jpg", "http://animeholic.net/i/a/src/1349735207114.jpg", "http://animeholic.net/i/a/src/1347894857755.jpg" };
 
-        public string getImg()
+        public string getImg(out bool fromDB)
         {
-            return Manager.Instance.GetImage();
-            //Random r = new Random();
-            //return imgs[r.Next(0, imgs.Length)];
+            try
+            {
+                fromDB = true;
+                return Manager.Instance.GetImage();
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Couldnt get image from DB, Exception: {0}", ex.ToString());
+                Random r = new Random();
+                fromDB = false;
+                return imgs[r.Next(0, imgs.Length)];
+            }
+
 
         }
 
